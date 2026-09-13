@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import {
+import React, { useEffect, useState } from 'react';import {
   View,
   Text,
   TextInput,
@@ -12,6 +11,7 @@ import {
 } from 'react-native';
 
 import { sendMessageToN8N } from '../../src/services/n8nChat';
+import { getUser, getProfile } from '../../src/services/auth';
 type Message = {
   id: string;
   text: string;
@@ -19,13 +19,43 @@ type Message = {
 };
 
 export default function AssistantScreen() {
-  const [messages, setMessages] = useState<Message[]>([
+    const [userName, setUserName] = useState('');
+  const [village, setVillage] = useState('');
+  const [district, setDistrict] = useState('');
+  const [state, setState] = useState('');
+  const [capital, setCapital] = useState('');
+  const [skills, setSkills] = useState('');
+
+    useEffect(() => {
+    const loadUserProfile = async () => {
+      const user = await getUser();
+      const profile = await getProfile();
+
+      if (user) {
+  setUserName(user.name);
+
+  setMessages([
     {
       id: 'welcome',
-      text: "Hi! 👋 I'm U360AI. Ask me about business opportunities, market demand, competition, or starting a business.",
+      text: `Hi ${user.name.split(' ')[0]}! 👋 I'm U360AI, your AI Business Advisor. I can help you find business opportunities, understand market demand, analyze competition, and plan your business.`,
       sender: 'ai',
     },
   ]);
+}
+
+      if (profile) {
+        setVillage(profile.village);
+        setDistrict(profile.district);
+        setState(profile.state);
+        setCapital(profile.capital);
+        setSkills(profile.skills);
+      }
+    };
+
+    loadUserProfile();
+  }, []);
+  
+  const [messages, setMessages] = useState<Message[]>([]);
 
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -55,10 +85,25 @@ export default function AssistantScreen() {
   setLoading(true);
 
   try {
-    const response = await sendMessageToN8N(
-      text,
-      sessionId
-    );
+    const userContext = `
+User name: ${userName}
+Location: ${village}, ${district}, ${state}
+Available capital: ₹${capital || '0'}
+Skills/resources: ${skills || 'Not provided'}
+`;
+
+const messageWithContext = `
+${userContext}
+
+User's question:
+${text}
+`;
+
+const response = await sendMessageToN8N(
+  messageWithContext,
+  sessionId
+);
+    
 
     const responseText = await response.text();
 
@@ -166,7 +211,7 @@ export default function AssistantScreen() {
           </Text>
 
           <Text style={styles.subtitle}>
-            Your AI Business Advisor
+            Your AI Business Advisor • {village}, {district}
           </Text>
         </View>
 

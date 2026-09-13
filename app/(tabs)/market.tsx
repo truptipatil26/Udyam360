@@ -1,14 +1,31 @@
 // app/(tabs)/market.tsx
-import React from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 import { colors, radius, spacing } from '../../constants/theme';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
+import { getProfile } from '../../src/services/auth';
 
 export default function MarketScreen() {
+  const [village, setVillage] = useState('');
+const [district, setDistrict] = useState('');
+const [state, setState] = useState('');
+
+useEffect(() => {
+  const loadProfile = async () => {
+    const profile = await getProfile();
+
+    if (profile) {
+      setVillage(profile.village);
+      setDistrict(profile.district);
+      setState(profile.state);
+    }
+  };
+
+  loadProfile();
+}, []);
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView
@@ -17,7 +34,9 @@ export default function MarketScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.pageTitle}>Market</Text>
-        <Text style={styles.pageSubtitle}>Local commodity & demand trends</Text>
+        <Text style={styles.pageSubtitle}>
+          Local commodity & demand trends • {village}, {district}
+        </Text>
 
         <Card style={styles.card}>
           <View style={styles.iconWrap}>
@@ -26,8 +45,9 @@ export default function MarketScreen() {
           <Badge label="Coming Soon" variant="accent" style={{ marginTop: spacing.md }} />
           <Text style={styles.cardTitle}>Full Market Pulse Dashboard</Text>
           <Text style={styles.cardBody}>
-            Detailed price trends, demand heatmaps, and seasonal forecasts for
-            crops, dairy, and local goods around your district.
+            Market insights for {village || 'your area'}, {district || 'your district'}, {state || 'your state'}.
+            Udyam360 will use local demand, commodity prices, and market signals to identify
+            promising business opportunities.
           </Text>
         </Card>
       </ScrollView>

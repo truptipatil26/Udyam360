@@ -1,14 +1,35 @@
 // app/(tabs)/opportunities.tsx
-import React from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 import { colors, radius, spacing } from '../../constants/theme';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
+import { getProfile } from '../../src/services/auth';
 
 export default function OpportunitiesScreen() {
+  const [village, setVillage] = useState('');
+const [district, setDistrict] = useState('');
+const [state, setState] = useState('');
+const [skills, setSkills] = useState('');
+const [capital, setCapital] = useState('');
+
+useEffect(() => {
+  const loadProfile = async () => {
+    const profile = await getProfile();
+
+    if (profile) {
+      setVillage(profile.village);
+      setDistrict(profile.district);
+      setState(profile.state);
+      setSkills(profile.skills);
+      setCapital(profile.capital);
+    }
+  };
+
+  loadProfile();
+}, []);
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView
@@ -17,7 +38,9 @@ export default function OpportunitiesScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.pageTitle}>Opportunities</Text>
-        <Text style={styles.pageSubtitle}>AI Opportunity Gap Detector</Text>
+        <Text style={styles.pageSubtitle}>
+          AI Opportunity Gap Detector • {village}, {district}
+        </Text>
 
         <Card style={styles.card}>
           <View style={styles.iconWrap}>
@@ -26,9 +49,7 @@ export default function OpportunitiesScreen() {
           <Badge label="Coming Soon" variant="accent" style={{ marginTop: spacing.md }} />
           <Text style={styles.cardTitle}>Full Gap Detector Coming Here</Text>
           <Text style={styles.cardBody}>
-            This screen will show a ranked, filterable list of every business opportunity
-            gap detected in your area — by category, investment range, and demand
-            confidence — powered by local market signals.
+            Udyam360 will analyze business opportunities around {village || 'your area'} in {district || 'your district'}, based on your available capital of ₹{capital || '0'} and your skills in {skills || 'your selected skills'}.
           </Text>
         </Card>
       </ScrollView>

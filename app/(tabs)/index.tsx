@@ -1,7 +1,6 @@
 // app/(tabs)/index.tsx
 
-
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -10,6 +9,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useLanguage } from '../../src/services/i18n/LanguageContext';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -24,7 +24,7 @@ import {
   nearbyOpportunities,
   marketPulse,
 } from '../../data/mockData';
-
+import { getUser, getProfile } from '../../src/services/auth';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
@@ -34,9 +34,46 @@ import ScoreGauge from '../../components/ui/ScoreGauge';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
 
-  return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+  const [userName, setUserName] = useState(currentUser.name);
+  const [village, setVillage] = useState(currentUser.location);
+  const [district, setDistrict] = useState(currentUser.district);
+  const [capital, setCapital] = useState('');
+  const [avatarInitials, setAvatarInitials] = useState(
+  currentUser.avatarInitials
+);
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      const user = await getUser();
+      const profile = await getProfile();
+
+      if (user) {
+        setUserName(user.name);
+
+        const initials = user.name
+          .trim()
+          .split(/\s+/)
+          .map((word) => word[0])
+          .join('')
+          .slice(0, 2)
+          .toUpperCase();
+
+        setAvatarInitials(initials);
+      }
+
+      if (profile) {
+        setVillage(profile.village);
+        setDistrict(profile.district);
+        setCapital(profile.capital);
+      }
+    };
+
+    loadUserData();
+  }, []);
+
+  return (    <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -45,17 +82,18 @@ export default function HomeScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{currentUser.avatarInitials}</Text>
-          </View>
+            <Text style={styles.avatarText}>
+              {avatarInitials}
+            </Text>          </View>
 
           <View style={styles.headerTextWrap}>
             <Text style={styles.greeting}>
-              {getGreeting()}, {currentUser.name.split(' ')[0]}
+              {getGreeting()}, {userName.split(' ')[0]}
             </Text>
             <View style={styles.locationRow}>
               <Ionicons name="location-outline" size={13} color={colors.textSecondary} />
               <Text style={styles.locationText}>
-                {currentUser.location}, {currentUser.district}
+                {village}, {district}
               </Text>
             </View>
           </View>
@@ -75,7 +113,7 @@ export default function HomeScreen() {
           <View style={styles.scoreCardRow}>
             <ScoreGauge score={opportunityScore.score} label="/ 100" />
             <View style={styles.scoreCardDetails}>
-              <Text style={styles.scoreCardLabel}>AI Opportunity Score</Text>
+              <Text style={styles.scoreCardLabel}>{t.aiOpportunityScore}</Text>
               <Text style={styles.scoreCardHeadline}>{opportunityScore.label}</Text>
               <View style={styles.trendRow}>
                 <Ionicons
@@ -96,16 +134,20 @@ export default function HomeScreen() {
             icon="wallet-outline"
             iconColor={colors.primary}
             iconBg={colors.primaryLight}
-            label="Available Capital"
-            value={formatINR(capitalInfo.availableAmount, true)}
-            subLabel={`${capitalInfo.schemesEligible} govt. schemes eligible`}
+            label={t.availableCapital}
+            value={
+              capital
+                ? `₹${Number(capital.replace(/,/g, '')).toLocaleString('en-IN')}`
+                : '₹0'
+            }
+            subLabel={`${capitalInfo.schemesEligible} ${t.govtSchemesEligible}`}
           />
           <View style={{ width: spacing.md }} />
           <StatTile
             icon="trending-up-outline"
             iconColor={colors.accentDark}
             iconBg={colors.accentLight}
-            label="Market Potential"
+            label={t.marketPotential}
             value={`${marketPotential.score}/100`}
             subLabel={`${marketPotential.demandLevel} demand · +${marketPotential.growthPercent}%`}
           />
@@ -113,7 +155,7 @@ export default function HomeScreen() {
 
         {/* Top Recommended Business */}
         <View style={styles.section}>
-          <SectionHeader title="Top Recommended Business" subtitle="Based on your profile & location" />
+          <SectionHeader title={t.topRecommendedBusiness} subtitle={t.basedOnProfileLocation} />
           <Card style={styles.recommendationCard}>
             <View style={styles.recommendationHeader}>
               <View style={styles.recommendationIconWrap}>
@@ -130,27 +172,27 @@ export default function HomeScreen() {
 
             <View style={styles.recommendationStatsRow}>
               <View style={styles.recommendationStat}>
-                <Text style={styles.recommendationStatLabel}>Investment</Text>
+                <Text style={styles.recommendationStatLabel}>{t.investment}</Text>
                 <Text style={styles.recommendationStatValue}>
                   {formatINR(topRecommendation.estimatedInvestment, true)}
                 </Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.recommendationStat}>
-                <Text style={styles.recommendationStatLabel}>Monthly Income</Text>
+                <Text style={styles.recommendationStatLabel}>{t.monthlyIncome}</Text>
                 <Text style={styles.recommendationStatValue}>
                   {formatINR(topRecommendation.estimatedMonthlyIncome, true)}
                 </Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.recommendationStat}>
-                <Text style={styles.recommendationStatLabel}>ROI Time</Text>
+                <Text style={styles.recommendationStatLabel}>{t.roiTime}</Text>
                 <Text style={styles.recommendationStatValue}>{topRecommendation.roiMonths} mo</Text>
               </View>
             </View>
 
             <Button
-              label="View Full Analysis"
+              label={t.viewFullAnalysis}
               icon="arrow-forward"
               iconPosition="right"
               fullWidth
@@ -162,9 +204,9 @@ export default function HomeScreen() {
         {/* Top Opportunities Near You */}
         <View style={styles.section}>
           <SectionHeader
-            title="Top Opportunities Near You"
-            subtitle={`${nearbyOpportunities.length} matches within 25 km`}
-            actionLabel="See all"
+            title={t.topOpportunitiesNearYou}
+  subtitle={`${nearbyOpportunities.length} ${t.matchesWithin25Km}`}
+  actionLabel={t.seeAll}
             onActionPress={() => router.push('/(tabs)/opportunities')}
           />
           <ScrollView
@@ -208,9 +250,9 @@ export default function HomeScreen() {
         {/* Local Market Pulse */}
         <View style={styles.section}>
           <SectionHeader
-            title="Local Market Pulse"
-            subtitle="Live-style trends near Wardha"
-            actionLabel="View Market"
+              title={t.localMarketPulse}
+  subtitle={t.liveStyleTrends}
+  actionLabel={t.viewMarket}
             onActionPress={() => router.push('/(tabs)/market')}
           />
           <Card padded={false}>
@@ -249,7 +291,7 @@ export default function HomeScreen() {
         {/* Ask Opportunity AI */}
         <View style={[styles.section, styles.askSection]}>
           <Button
-            label="Ask Opportunity AI"
+            label={t.askOpportunityAI}
             icon="sparkles"
             fullWidth
             onPress={() => router.push('/(tabs)/assistant')}
