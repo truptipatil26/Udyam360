@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const USERS_KEY = "udyam360_users";
 const CURRENT_USER_KEY = "udyam360_current_user";
+const ONBOARDING_KEY = "udyam360_onboarding_completed";
 
 export type User = {
   id: string;
@@ -217,3 +218,23 @@ export const clearProfileForTesting = async () => {
     JSON.stringify(users)
   );
 };
+// ===============================
+// ONBOARDING
+// ===============================
+
+export const isOnboardingCompleted = async (): Promise<boolean> => {
+  const completed = await AsyncStorage.getItem(ONBOARDING_KEY);
+
+  return completed === "true";
+};
+
+export const completeOnboarding = async (): Promise<void> => {
+  await AsyncStorage.setItem(
+    ONBOARDING_KEY,
+    "true"
+  );
+};
+export const resetOnboarding = async (): Promise<void> => {
+  await AsyncStorage.removeItem(ONBOARDING_KEY);
+};
+

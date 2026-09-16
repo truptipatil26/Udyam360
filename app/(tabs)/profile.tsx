@@ -9,7 +9,7 @@ import { colors, radius, spacing } from '../../constants/theme';
 import { currentUser } from '../../data/mockData';
 import Card from '../../components/ui/Card';
 import { logout, clearProfileForTesting } from '../../src/services/auth';
-import { getUser, getProfile } from '../../src/services/auth';
+import { getUser, getProfile, resetOnboarding, } from '../../src/services/auth';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -21,6 +21,10 @@ const [state, setState] = useState(currentUser.state);
 const [avatarInitials, setAvatarInitials] = useState(
   currentUser.avatarInitials
 );
+const handleViewOnboarding = async () => {
+  await resetOnboarding();
+  router.replace("/(onboarding)");
+};
 
 useEffect(() => {
   const loadProfile = async () => {
@@ -125,6 +129,34 @@ useEffect(() => {
           />
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+  style={styles.settingItem}
+  onPress={handleViewOnboarding}
+>
+  <View style={styles.settingLeft}>
+    <Ionicons
+      name="play-circle-outline"
+      size={24}
+      color="#18794E"
+    />
+
+    <View style={styles.settingTextContainer}>
+      <Text style={styles.settingTitle}>
+        View Onboarding Again
+      </Text>
+
+      <Text style={styles.settingSubtitle}>
+        Explore how Udyam360 works
+      </Text>
+    </View>
+  </View>
+
+  <Ionicons
+    name="chevron-forward"
+    size={20}
+    color="#999"
+  />
+</TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -191,5 +223,35 @@ settingsArrowText: {
     fontSize: 15,
     fontWeight: '700',
     color: '#D32F2F',
+  },
+    settingItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 16,
+    paddingHorizontal: 4,
+  },
+
+  settingLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+
+  settingTextContainer: {
+    marginLeft: 14,
+    flex: 1,
+  },
+
+  settingTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#1A1F1C",
+  },
+
+  settingSubtitle: {
+    fontSize: 13,
+    color: "#7A827D",
+    marginTop: 3,
   },
 });
