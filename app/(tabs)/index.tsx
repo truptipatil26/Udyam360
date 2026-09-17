@@ -287,7 +287,37 @@ export default function HomeScreen() {
             ))}
           </Card>
         </View>
+            {/* Financial Structuring Assistant */}
+<View style={styles.section}>
+  <Card style={styles.financialCard}>
+    <View style={styles.financialHeader}>
+      <View style={styles.financialIconWrap}>
+        <Ionicons
+          name="wallet-outline"
+          size={22}
+          color={colors.primary}
+        />
+      </View>
 
+      <View style={styles.financialHeaderText}>
+        <Text style={styles.financialTitle}>
+          Financial Structuring Assistant
+        </Text>
+
+        <Text style={styles.financialSubtitle}>
+          Estimate EMI, repayment, profit and cash surplus
+        </Text>
+      </View>
+    </View>
+
+    <Button
+      label="Plan My Finances"
+      
+      fullWidth
+      onPress={() => router.push("/financial-structuring")}
+    />
+  </Card>
+</View>
         {/* Ask Opportunity AI */}
         <View style={[styles.section, styles.askSection]}>
           <Button
@@ -303,6 +333,42 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+ financialCard: {
+  ...shadows.soft,
+},
+
+financialHeader: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginBottom: spacing.lg,
+},
+
+financialIconWrap: {
+  width: 44,
+  height: 44,
+  borderRadius: radius.md,
+  backgroundColor: colors.primaryLight,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+financialHeaderText: {
+  flex: 1,
+  marginLeft: spacing.md,
+},
+
+financialTitle: {
+  fontSize: 16,
+  fontWeight: '700',
+  color: colors.textPrimary,
+},
+
+financialSubtitle: {
+  fontSize: 12.5,
+  color: colors.textSecondary,
+  lineHeight: 18,
+  marginTop: 4,
+},
   safeArea: {
     flex: 1,
     backgroundColor: colors.background,
