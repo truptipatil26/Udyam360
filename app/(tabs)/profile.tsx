@@ -1,6 +1,7 @@
 // app/(tabs)/profile.tsx
-import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';import { Alert, TouchableOpacity } from 'react-native';
+import { useRouter, useFocusEffect } from 'expo-router';
+import React, { useCallback, useState } from 'react';
+import { Alert, TouchableOpacity } from 'react-native';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,36 +26,40 @@ const handleViewOnboarding = async () => {
   await resetOnboarding();
   router.replace("/(onboarding)");
 };
+const [locationAddress, setLocationAddress] = useState('');
 
-useEffect(() => {
-  const loadProfile = async () => {
-    const user = await getUser();
-    const profile = await getProfile();
+useFocusEffect(
+  useCallback(() => {
+    const loadProfile = async () => {
+      const user = await getUser();
+      const profile = await getProfile();
 
-    if (user) {
-  setUserName(user.name);
-  setEmail(user.email);
+      if (user) {
+        setUserName(user.name);
+        setEmail(user.email);
 
-  const initials = user.name
-    .trim()
-    .split(/\s+/)
-    .map((word) => word[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
+        const initials = user.name
+          .trim()
+          .split(/\s+/)
+          .map((word) => word[0])
+          .join('')
+          .slice(0, 2)
+          .toUpperCase();
 
-  setAvatarInitials(initials);
-}
+        setAvatarInitials(initials);
+      }
 
-    if (profile) {
-      setVillage(profile.village);
-      setDistrict(profile.district);
-      setState(profile.state);
-    }
-  };
+      if (profile) {
+        setVillage(profile.village);
+        setDistrict(profile.district);
+        setState(profile.state);
+        setLocationAddress(profile.locationAddress || '');
+      }
+    };
 
-  loadProfile();
-}, []);
+    loadProfile();
+  }, [])
+);
     const handleLogout = async () => {
   try {
     await logout();
@@ -77,13 +82,52 @@ useEffect(() => {
             <Text style={styles.avatarText}>{avatarInitials}</Text>          </View>
           <Text style={styles.name}>{userName}</Text>
           <View style={styles.locationRow}>
-            <Ionicons name="location-outline" size={13} color={colors.textSecondary} />
+            <Ionicons
+              name="location-outline"
+              size={13}
+              color={colors.textSecondary}
+            />
+
             <Text style={styles.locationText}>
-              {village}, {district}, {state}
+              {locationAddress ||
+                `${village}, ${district}, ${state}`}
             </Text>
           </View>
         </Card>
+      <TouchableOpacity
+  activeOpacity={0.8}
+  onPress={() => router.push("/edit-profile")}
+>
+  <Card style={styles.card}>
+    <View style={styles.iconWrap}>
+      <Ionicons
+        name="create-outline"
+        size={26}
+        color={colors.primary}
+      />
+    </View>
 
+    <Text style={styles.cardTitle}>
+      Edit Profile
+    </Text>
+
+    <Text style={styles.cardBody}>
+      Update your personal information and location.
+    </Text>
+
+    <View style={styles.settingsArrow}>
+      <Text style={styles.settingsArrowText}>
+        Edit Profile
+      </Text>
+
+      <Ionicons
+        name="arrow-forward"
+        size={18}
+        color={colors.primary}
+      />
+    </View>
+  </Card>
+</TouchableOpacity>
         <TouchableOpacity
   activeOpacity={0.8}
   onPress={() => router.push('/settings')}

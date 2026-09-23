@@ -17,6 +17,11 @@ export type Profile = {
   village: string;
   capital: string;
   skills: string;
+
+  // Business location
+  locationAddress?: string;
+  latitude?: number;
+  longitude?: number;
 };
 
 export type StoredUser = User & {

@@ -1,6 +1,6 @@
 // app/(tabs)/index.tsx
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useLanguage } from '../../src/services/i18n/LanguageContext';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -43,8 +43,10 @@ export default function HomeScreen() {
   const [avatarInitials, setAvatarInitials] = useState(
   currentUser.avatarInitials
 );
+const [locationAddress, setLocationAddress] = useState("");
 
-  useEffect(() => {
+  useFocusEffect(
+  useCallback(() => {
     const loadUserData = async () => {
       const user = await getUser();
       const profile = await getProfile();
@@ -67,11 +69,15 @@ export default function HomeScreen() {
         setVillage(profile.village);
         setDistrict(profile.district);
         setCapital(profile.capital);
+        setLocationAddress(
+          profile.locationAddress || ""
+        );
       }
     };
 
     loadUserData();
-  }, []);
+  }, [])
+);
 
   return (    <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView
@@ -81,28 +87,54 @@ export default function HomeScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {avatarInitials}
-            </Text>          </View>
-
-          <View style={styles.headerTextWrap}>
-            <Text style={styles.greeting}>
-              {getGreeting()}, {userName.split(' ')[0]}
-            </Text>
-            <View style={styles.locationRow}>
-              <Ionicons name="location-outline" size={13} color={colors.textSecondary} />
-              <Text style={styles.locationText}>
-                {village}, {district}
+          <TouchableOpacity
+            style={styles.profileHeaderButton}
+            activeOpacity={0.8}
+            onPress={() => router.push('/(tabs)/profile')}
+          >
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>
+                {avatarInitials}
               </Text>
             </View>
-          </View>
 
-          <TouchableOpacity style={styles.bellWrap} activeOpacity={0.7}>
-            <Ionicons name="notifications-outline" size={22} color={colors.textPrimary} />
+            <View style={styles.headerTextWrap}>
+              <Text style={styles.greeting}>
+                {getGreeting()}, {userName.split(' ')[0]}
+              </Text>
+
+              <View style={styles.locationRow}>
+                <Ionicons
+                  name="location-outline"
+                  size={13}
+                  color={colors.textSecondary}
+                />
+
+                <Text
+                  style={styles.locationText}
+                  numberOfLines={1}
+                >
+                  {locationAddress || `${village}, ${district}`}
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.bellWrap}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name="notifications-outline"
+              size={22}
+              color={colors.textPrimary}
+            />
+
             {currentUser.notificationsCount > 0 && (
               <View style={styles.bellBadge}>
-                <Text style={styles.bellBadgeText}>{currentUser.notificationsCount}</Text>
+                <Text style={styles.bellBadgeText}>
+                  {currentUser.notificationsCount}
+                </Text>
               </View>
             )}
           </TouchableOpacity>
@@ -333,6 +365,12 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+profileHeaderButton: {
+  flex: 1,
+  flexDirection: 'row',
+  alignItems: 'center',
+},
+
  financialCard: {
   ...shadows.soft,
 },
