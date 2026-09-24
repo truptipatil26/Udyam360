@@ -1,3 +1,4 @@
+//profile-setup.tsx
 import React, { useState } from "react";
 import {
   Alert,
@@ -13,7 +14,7 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import * as Location from "expo-location";
-import MapView, { Marker, Region } from "react-native-maps";
+import { MapView, Marker, type Region } from "../../components/UdyamMap";
 import { saveProfile } from "../../src/services/auth";
 
 export default function ProfileSetupScreen() {

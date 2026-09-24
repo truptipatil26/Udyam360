@@ -79,7 +79,8 @@ useFocusEffect(
 
         <Card style={styles.profileCard}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{avatarInitials}</Text>          </View>
+            <Text style={styles.avatarText}>{avatarInitials}</Text>          
+          </View>
           <Text style={styles.name}>{userName}</Text>
           <View style={styles.locationRow}>
             <Ionicons

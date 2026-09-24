@@ -1,3 +1,4 @@
+//opportunity-map.tsx
 import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
@@ -10,7 +11,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import MapView, { Marker, Circle, PROVIDER_GOOGLE } from 'react-native-maps';
+import {
+  MapView,
+  Marker,
+  Circle,
+  PROVIDER_GOOGLE,
+} from "../components/UdyamMap";
 import { Ionicons } from '@expo/vector-icons';
 
 import { colors, radius, spacing } from '../constants/theme';

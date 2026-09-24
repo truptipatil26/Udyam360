@@ -1,3 +1,4 @@
+//update-location.tsx
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -10,7 +11,7 @@ import {
   Alert,
   Keyboard,
 } from "react-native";
-import MapView, { Marker, Region } from "react-native-maps";
+import { MapView, Marker, type Region } from "../components/UdyamMap";
 import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -294,8 +295,7 @@ const selectSearchResult = async (
   setLatitude(lat);
   setLongitude(lon);
 
-  setRegion((previous) => ({
-    ...previous,
+setRegion((previous: Region) => ({    ...previous,
     latitude: lat,
     longitude: lon,
   }));

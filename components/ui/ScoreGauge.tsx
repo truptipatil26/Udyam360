@@ -56,7 +56,7 @@ export default function ScoreGauge({
           origin={`${size / 2}, ${size / 2}`}
         />
       </Svg>
-      <View style={[StyleSheet.absoluteFillObject, styles.center]}>
+      <View style={[StyleSheet.absoluteFill, styles.center]}>
         <Text style={styles.scoreText}>{clamped}</Text>
         {label ? <Text style={styles.labelText}>{label}</Text> : null}
       </View>
