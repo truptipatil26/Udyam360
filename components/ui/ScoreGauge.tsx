@@ -2,8 +2,7 @@
 // Circular score ring built with react-native-svg.
 // Run: npx expo install react-native-svg
 
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { colors } from '../../constants/theme';
 
@@ -26,10 +25,10 @@ export default function ScoreGauge({
   const strokeDashoffset = circumference - (clamped / 100) * circumference;
 
   const getColor = () => {
-    if (clamped >= 75) return colors.success;
-    if (clamped >= 50) return colors.accent;
-    return colors.danger;
-  };
+  if (clamped >= 75) return '#5C9F68';
+  if (clamped >= 50) return colors.accent;
+  return colors.danger;
+};
 
   return (
     <View style={{ width: size, height: size }}>
@@ -38,7 +37,7 @@ export default function ScoreGauge({
           cx={size / 2}
           cy={size / 2}
           r={ringRadius}
-          stroke={colors.surfaceAlt}
+          stroke="#E3E8E1"
           strokeWidth={strokeWidth}
           fill="none"
         />
@@ -56,7 +55,7 @@ export default function ScoreGauge({
           origin={`${size / 2}, ${size / 2}`}
         />
       </Svg>
-      <View style={[StyleSheet.absoluteFillObject, styles.center]}>
+      <View style={[StyleSheet.absoluteFill, styles.center]}>
         <Text style={styles.scoreText}>{clamped}</Text>
         {label ? <Text style={styles.labelText}>{label}</Text> : null}
       </View>

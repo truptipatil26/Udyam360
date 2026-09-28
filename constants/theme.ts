@@ -16,9 +16,9 @@ export const colors = {
   surface: '#FFFFFF',
   surfaceAlt: '#F0EDE6',
 
-  primary: '#0B6E4F',
-  primaryDark: '#054D36',
-  primaryLight: '#E4F2EC',
+  primary: '#527A5B',
+  primaryDark: '#3F62486',
+  primaryLight: '#E5EEE6',
 
   accent: '#D4A017',
   accentDark: '#8A6510',

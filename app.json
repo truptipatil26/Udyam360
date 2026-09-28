@@ -7,18 +7,17 @@
     "icon": "./assets/images/icon.png",
     "scheme": "ruralopportunityai",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
     "android": {
+      "package": "com.trupti82.udyam360",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -26,20 +25,31 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router",
-      [
-  "expo-splash-screen",
-  {
-    "image": "./assets/images/splash-logo.png",
-    "imageWidth": 180,
-    "resizeMode": "contain",
-    "backgroundColor": "#F8FBF6"
-  }
-]
-    ],
+  "expo-router",
+  [
+    "expo-splash-screen",
+    {
+      "image": "./assets/images/splash-logo.png",
+      "imageWidth": 180,
+      "resizeMode": "contain",
+      "backgroundColor": "#F8FBF6"
+    }
+  ],
+  "expo-font",
+  "expo-image",
+  "expo-web-browser",
+  "expo-status-bar"
+  
+],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a5c7b6fd-9524-4158-973b-6dbbafa74a3c"
+      }
     }
   }
 }

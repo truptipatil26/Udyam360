@@ -1,77 +1,982 @@
 // app/(tabs)/opportunities.tsx
-import React, { useEffect, useState } from 'react';import { View, Text, ScrollView, StyleSheet } from 'react-native';
+
+import React, { useCallback, useState } from 'react';
+import { useRouter } from 'expo-router';
+import {
+  ActivityIndicator,
+  Alert,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from 'expo-router';
 
 import { colors, radius, spacing } from '../../constants/theme';
-import Card from '../../components/ui/Card';
-import Badge from '../../components/ui/Badge';
 import { getProfile } from '../../src/services/auth';
+import {
+  CompetitionAnalysis,
+  getCompetitionAnalysis,
+} from '../../src/services/competitorApi';
+
+const CATEGORIES = [
+  'grocery',
+  'dairy',
+  'pharmacy',
+  'restaurant',
+  'clothing',
+  'salon',
+];
 
 export default function OpportunitiesScreen() {
+  const router = useRouter();
   const [village, setVillage] = useState('');
-const [district, setDistrict] = useState('');
-const [state, setState] = useState('');
-const [skills, setSkills] = useState('');
-const [capital, setCapital] = useState('');
+  const [district, setDistrict] = useState('');
+  const [state, setState] = useState('');
+  const [capital, setCapital] = useState('');
+  const [skills, setSkills] = useState('');
 
-useEffect(() => {
-  const loadProfile = async () => {
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
+  const [locationAddress, setLocationAddress] = useState('');
+
+  const [category, setCategory] = useState('grocery');
+  const [customCategory, setCustomCategory] = useState('');
+
+  const [analysis, setAnalysis] =
+    useState<CompetitionAnalysis | null>(null);
+
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadProfile = useCallback(async () => {
     const profile = await getProfile();
 
-    if (profile) {
-      setVillage(profile.village);
-      setDistrict(profile.district);
-      setState(profile.state);
-      setSkills(profile.skills);
-      setCapital(profile.capital);
+    if (!profile) {
+      return;
+    }
+
+    setVillage(profile.village || '');
+    setDistrict(profile.district || '');
+    setState(profile.state || '');
+    setCapital(profile.capital || '');
+    setSkills(profile.skills || '');
+
+    setLatitude(
+      typeof profile.latitude === 'number'
+        ? profile.latitude
+        : null
+    );
+
+    setLongitude(
+      typeof profile.longitude === 'number'
+        ? profile.longitude
+        : null
+    );
+
+    setLocationAddress(profile.locationAddress || '');
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadProfile();
+    }, [loadProfile])
+  );
+
+  const analyzeOpportunity = async () => {
+    if (latitude === null || longitude === null) {
+      Alert.alert(
+        'Location Required',
+        'Please set your business location first from Profile → Update Location.'
+      );
+      return;
+    }
+
+    const selectedCategory =
+      customCategory.trim() || category.trim();
+
+    if (!selectedCategory) {
+      Alert.alert(
+        'Category Required',
+        'Please select or enter a business category.'
+      );
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setAnalysis(null);
+
+      const result = await getCompetitionAnalysis(
+        latitude,
+        longitude,
+        selectedCategory.toLowerCase()
+      );
+
+      setAnalysis(result);
+    } catch (error) {
+      console.error('Opportunity analysis error:', error);
+
+      Alert.alert(
+        'Unable to Analyze',
+        'We could not get the competition analysis right now. Please try again.'
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
-  loadProfile();
-}, []);
+  const onRefresh = async () => {
+    setRefreshing(true);
+
+    await loadProfile();
+
+    setRefreshing(false);
+  };
+
+  const getCompetitionDescription = () => {
+    if (!analysis) return '';
+
+    switch (analysis.competition_level) {
+      case 'No Competition':
+        return 'No recorded competitors were found around your selected location. This may indicate a potential market gap.';
+
+      case 'Low Competition':
+        return 'Only a small number of competitors were found nearby. This category may have room for a new business.';
+
+      case 'Medium Competition':
+        return 'Some competitors are already operating nearby. Consider differentiation before starting this business.';
+
+      case 'High Competition':
+        return 'Several competitors are operating nearby. A strong differentiation strategy may be important.';
+
+      default:
+        return 'Competition data is available for this business category.';
+    }
+  };
+
+  const formatDistance = (distance: number | null) => {
+    if (distance === null) {
+      return '—';
+    }
+
+    if (distance < 1000) {
+      return `${Math.round(distance)} m`;
+    }
+
+    return `${(distance / 1000).toFixed(1)} km`;
+  };
+
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <SafeAreaView
+      style={styles.safeArea}
+      edges={['top']}
+    >
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
+        }
       >
-        <Text style={styles.pageTitle}>Opportunities</Text>
-        <Text style={styles.pageSubtitle}>
-          AI Opportunity Gap Detector • {village}, {district}
+        {/* Header */}
+
+        <View style={styles.headerRow}>
+          <View style={styles.headerText}>
+            <Text style={styles.pageTitle}>
+              Opportunity Gap Detector
+            </Text>
+
+            <Text style={styles.pageSubtitle}>
+              Discover business opportunities around your location.
+            </Text>
+          </View>
+
+          <View style={styles.aiIcon}>
+            <Ionicons
+              name="sparkles"
+              size={24}
+              color={colors.primary}
+            />
+          </View>
+        </View>
+
+        {/* Location */}
+
+        <View style={styles.locationCard}>
+          <View style={styles.locationIcon}>
+            <Ionicons
+              name="location"
+              size={22}
+              color={colors.primary}
+            />
+          </View>
+
+          <View style={styles.locationInfo}>
+            <Text style={styles.smallLabel}>
+              ANALYZING LOCATION
+            </Text>
+
+            <Text style={styles.locationTitle}>
+              {village || 'Your village'}
+              {district ? `, ${district}` : ''}
+            </Text>
+
+            <Text style={styles.locationAddress}>
+              {locationAddress ||
+                `${district || 'Your district'}, ${state || 'Maharashtra'}`}
+            </Text>
+          </View>
+        </View>
+
+        {/* Category */}
+
+        <Text style={styles.sectionTitle}>
+          What business are you considering?
         </Text>
 
-        <Card style={styles.card}>
-          <View style={styles.iconWrap}>
-            <Ionicons name="compass-outline" size={26} color={colors.primary} />
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryScroll}
+        >
+          {CATEGORIES.map((item) => {
+            const selected =
+              category === item && !customCategory;
+
+            return (
+              <TouchableOpacity
+                key={item}
+                style={[
+                  styles.categoryChip,
+                  selected && styles.categoryChipSelected,
+                ]}
+                onPress={() => {
+                  setCategory(item);
+                  setCustomCategory('');
+                }}
+              >
+                <Text
+                  style={[
+                    styles.categoryText,
+                    selected && styles.categoryTextSelected,
+                  ]}
+                >
+                  {item.charAt(0).toUpperCase() +
+                    item.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+
+        {/* Custom category */}
+
+        <TextInput
+          style={styles.input}
+          placeholder="Or enter another business category"
+          placeholderTextColor={colors.textSecondary}
+          value={customCategory}
+          onChangeText={setCustomCategory}
+          onFocus={() => {
+            setCategory('');
+          }}
+        />
+
+        {/* Analyze button */}
+
+        <TouchableOpacity
+          style={styles.analyzeButton}
+          onPress={analyzeOpportunity}
+          disabled={loading}
+          activeOpacity={0.85}
+        >
+          {loading ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <>
+              <Ionicons
+                name="search"
+                size={21}
+                color="#FFFFFF"
+              />
+
+              <Text style={styles.analyzeButtonText}>
+                Analyze Opportunity
+              </Text>
+
+              <Ionicons
+                name="arrow-forward"
+                size={21}
+                color="#FFFFFF"
+              />
+            </>
+          )}
+        </TouchableOpacity>
+
+        {/* Loading */}
+
+        {loading && (
+          <View style={styles.loadingCard}>
+            <ActivityIndicator
+              size="small"
+              color={colors.primary}
+            />
+
+            <Text style={styles.loadingText}>
+              Analyzing competitors around your location...
+            </Text>
           </View>
-          <Badge label="Coming Soon" variant="accent" style={{ marginTop: spacing.md }} />
-          <Text style={styles.cardTitle}>Full Gap Detector Coming Here</Text>
-          <Text style={styles.cardBody}>
-            Udyam360 will analyze business opportunities around {village || 'your area'} in {district || 'your district'}, based on your available capital of ₹{capital || '0'} and your skills in {skills || 'your selected skills'}.
+        )}
+
+        {/* Results */}
+
+        {analysis && !loading && (
+          <>
+            <View style={styles.resultHeader}>
+              <View>
+                <Text style={styles.resultEyebrow}>
+                  AI COMPETITION ANALYSIS
+                </Text>
+
+                <Text style={styles.resultTitle}>
+                  {analysis.category.charAt(0).toUpperCase() +
+                    analysis.category.slice(1)}
+                </Text>
+              </View>
+
+              <View style={styles.competitionBadge}>
+                <Text style={styles.competitionBadgeText}>
+                  {analysis.competition_level}
+                </Text>
+              </View>
+            </View>
+
+            {/* Main result card */}
+
+            <View style={styles.resultCard}>
+              <View style={styles.resultCardTop}>
+                <View style={styles.robotCircle}>
+                  <Ionicons
+                    name="sparkles"
+                    size={24}
+                    color={colors.primary}
+                  />
+                </View>
+
+                <View style={styles.resultCardTitleWrap}>
+                  <Text style={styles.resultCardLabel}>
+                    OPPORTUNITY SIGNAL
+                  </Text>
+
+                  <Text style={styles.resultCardTitle}>
+                    {analysis.competition_level}
+                  </Text>
+                </View>
+              </View>
+
+              <Text style={styles.resultDescription}>
+                {getCompetitionDescription()}
+              </Text>
+            </View>
+
+            <TouchableOpacity
+  style={styles.exploreButton}
+  activeOpacity={0.8}
+  onPress={() => {
+    if (!analysis) return;
+
+    router.push({
+      pathname: '/opportunity-details',
+      params: {
+        category: analysis.category,
+        competitionLevel: analysis.competition_level,
+        within1km: String(analysis.competitors.within_1km),
+        within3km: String(analysis.competitors.within_3km),
+        within5km: String(analysis.competitors.within_5km),
+        nearestName: analysis.nearest_competitor.business_name || '',
+        nearestDistance: String(
+          analysis.nearest_competitor.distance_m || ''
+        ),
+        capital,
+        skills,
+        village,
+        district,
+        lat: String(latitude),
+        lon: String(longitude),
+      },
+    });
+  }}
+>
+  <Text style={styles.exploreButtonText}>
+    Explore Opportunity
+  </Text>
+
+  <Ionicons
+    name="arrow-forward"
+    size={19}
+    color="#FFFFFF"
+  />
+</TouchableOpacity>
+
+            {/* Competitor statistics */}
+
+            <Text style={styles.sectionTitle}>
+              Nearby Competition
+            </Text>
+
+            <View style={styles.statsGrid}>
+              <View style={styles.statCard}>
+                <Ionicons
+                  name="location-outline"
+                  size={23}
+                  color={colors.primary}
+                />
+
+                <Text style={styles.statNumber}>
+                  {analysis.competitors.within_1km}
+                </Text>
+
+                <Text style={styles.statLabel}>
+                  Within 1 km
+                </Text>
+              </View>
+
+              <View style={styles.statCard}>
+                <Ionicons
+                  name="location-outline"
+                  size={23}
+                  color={colors.primary}
+                />
+
+                <Text style={styles.statNumber}>
+                  {analysis.competitors.within_3km}
+                </Text>
+
+                <Text style={styles.statLabel}>
+                  Within 3 km
+                </Text>
+              </View>
+
+              <View style={styles.statCard}>
+                <Ionicons
+                  name="location-outline"
+                  size={23}
+                  color={colors.primary}
+                />
+
+                <Text style={styles.statNumber}>
+                  {analysis.competitors.within_5km}
+                </Text>
+
+                <Text style={styles.statLabel}>
+                  Within 5 km
+                </Text>
+              </View>
+            </View>
+
+            {/* Nearest competitor */}
+
+            <View style={styles.nearestCard}>
+              <View style={styles.nearestIcon}>
+                <Ionicons
+                  name="storefront-outline"
+                  size={24}
+                  color={colors.primary}
+                />
+              </View>
+
+              <View style={styles.nearestInfo}>
+                <Text style={styles.smallLabel}>
+                  NEAREST COMPETITOR
+                </Text>
+
+                <Text style={styles.nearestName}>
+                  {analysis.nearest_competitor.business_name ||
+                    'No recorded competitor'}
+                </Text>
+
+                {analysis.nearest_competitor.distance_m !==
+                  null && (
+                  <Text style={styles.nearestDistance}>
+                    {formatDistance(
+                      analysis.nearest_competitor.distance_m
+                    )}{' '}
+                    away
+                  </Text>
+                )}
+              </View>
+            </View>
+          </>
+        )}
+
+        {/* Initial state */}
+
+        {!analysis && !loading && (
+          <View style={styles.emptyCard}>
+            <View style={styles.emptyIcon}>
+              <Ionicons
+                name="bulb-outline"
+                size={30}
+                color={colors.primary}
+              />
+            </View>
+
+            <Text style={styles.emptyTitle}>
+              Find a local opportunity
+            </Text>
+
+            <Text style={styles.emptyText}>
+              Select a business category and let Udyam360
+              analyze the competition around your location.
+            </Text>
+          </View>
+        )}
+
+        {/* Profile information */}
+
+        <View style={styles.profileInfo}>
+          <Text style={styles.profileInfoTitle}>
+            Your business profile
           </Text>
-        </Card>
+
+          <View style={styles.profileRow}>
+            <Ionicons
+              name="wallet-outline"
+              size={19}
+              color={colors.primary}
+            />
+
+            <Text style={styles.profileText}>
+              Capital: ₹{capital || '0'}
+            </Text>
+          </View>
+
+          <View style={styles.profileRow}>
+            <Ionicons
+              name="construct-outline"
+              size={19}
+              color={colors.primary}
+            />
+
+            <Text
+              style={styles.profileText}
+              numberOfLines={2}
+            >
+              Skills: {skills || 'Not specified'}
+            </Text>
+          </View>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: colors.background },
-  scroll: { flex: 1 },
-  scrollContent: { paddingHorizontal: spacing.lg, paddingTop: spacing.md, paddingBottom: spacing.xxxl },
-  pageTitle: { fontSize: 26, fontWeight: '800', color: colors.textPrimary },
-  pageSubtitle: { fontSize: 13, color: colors.textSecondary, marginTop: 4, marginBottom: spacing.xl, fontWeight: '500' },
-  card: { alignItems: 'flex-start' },
-  iconWrap: {
-    width: 52,
-    height: 52,
-    borderRadius: radius.md,
+  exploreButton: {
+  height: 50,
+  borderRadius: radius.lg,
+  backgroundColor: colors.primary,
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: spacing.sm,
+  marginTop: spacing.lg,
+},
+
+exploreButtonText: {
+  color: '#FFFFFF',
+  fontSize: 14,
+  fontWeight: '800',
+},
+
+  safeArea: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+
+  scroll: {
+    flex: 1,
+  },
+
+  scrollContent: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xxxl,
+  },
+
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: spacing.lg,
+  },
+
+  headerText: {
+    flex: 1,
+    paddingRight: spacing.md,
+  },
+
+  pageTitle: {
+    fontSize: 27,
+    fontWeight: '800',
+    color: colors.textPrimary,
+    lineHeight: 34,
+  },
+
+  pageSubtitle: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginTop: 6,
+    lineHeight: 21,
+  },
+
+  aiIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: colors.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cardTitle: { fontSize: 17, fontWeight: '700', color: colors.textPrimary, marginTop: spacing.md },
-  cardBody: { fontSize: 13.5, color: colors.textSecondary, lineHeight: 20, marginTop: spacing.sm },
+
+  locationCard: {
+    flexDirection: 'row',
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    marginBottom: spacing.xl,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+
+  locationIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
+  },
+
+  locationInfo: {
+    flex: 1,
+  },
+
+  smallLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1,
+    color: colors.textSecondary,
+  },
+
+  locationTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    marginTop: 3,
+  },
+
+  locationAddress: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 3,
+  },
+
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
+  },
+
+  categoryScroll: {
+    paddingBottom: spacing.sm,
+  },
+
+  categoryChip: {
+    paddingHorizontal: 17,
+    paddingVertical: 11,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    marginRight: 8,
+  },
+
+  categoryChipSelected: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+
+  categoryText: {
+    fontSize: 14,
+    color: colors.textPrimary,
+    fontWeight: '600',
+  },
+
+  categoryTextSelected: {
+    color: '#FFFFFF',
+  },
+
+  input: {
+    height: 50,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    paddingHorizontal: spacing.md,
+    fontSize: 14,
+    color: colors.textPrimary,
+    marginTop: spacing.sm,
+    marginBottom: spacing.md,
+  },
+
+  analyzeButton: {
+    minHeight: 56,
+    borderRadius: 28,
+    backgroundColor: colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    marginBottom: spacing.xl,
+  },
+
+  analyzeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+
+  loadingCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
+
+  loadingText: {
+    marginLeft: spacing.md,
+    color: colors.textSecondary,
+    fontSize: 14,
+  },
+
+  resultHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: spacing.md,
+  },
+
+  resultEyebrow: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1,
+    color: colors.primary,
+  },
+
+  resultTitle: {
+    fontSize: 25,
+    fontWeight: '800',
+    color: colors.textPrimary,
+    marginTop: 4,
+  },
+
+  competitionBadge: {
+    backgroundColor: colors.primaryLight,
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    maxWidth: 145,
+  },
+
+  competitionBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.primary,
+    textAlign: 'center',
+  },
+
+  resultCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
+    padding: spacing.lg,
+    marginBottom: spacing.xl,
+    borderLeftWidth: 5,
+    borderLeftColor: colors.primary,
+  },
+
+  resultCardTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  robotCircle: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
+  },
+
+  resultCardTitleWrap: {
+    flex: 1,
+  },
+
+  resultCardLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1,
+    color: colors.textSecondary,
+  },
+
+  resultCardTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: colors.primary,
+    marginTop: 3,
+  },
+
+  resultDescription: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 22,
+    marginTop: spacing.md,
+  },
+
+  statsGrid: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: spacing.md,
+  },
+
+  statCard: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    minHeight: 125,
+    justifyContent: 'center',
+  },
+
+  statNumber: {
+    fontSize: 27,
+    fontWeight: '800',
+    color: colors.textPrimary,
+    marginTop: 8,
+  },
+
+  statLabel: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+
+  nearestCard: {
+    flexDirection: 'row',
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    marginBottom: spacing.xl,
+  },
+
+  nearestIcon: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
+  },
+
+  nearestInfo: {
+    flex: 1,
+  },
+
+  nearestName: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    marginTop: 4,
+  },
+
+  nearestDistance: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginTop: 3,
+  },
+
+  emptyCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
+    padding: spacing.xl,
+    alignItems: 'center',
+    marginBottom: spacing.xl,
+  },
+
+  emptyIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.md,
+  },
+
+  emptyTitle: {
+    fontSize: 19,
+    fontWeight: '800',
+    color: colors.textPrimary,
+  },
+
+  emptyText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 21,
+    marginTop: 7,
+  },
+
+  profileInfo: {
+    backgroundColor: colors.primaryLight,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+  },
+
+  profileInfoTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    marginBottom: spacing.md,
+  },
+
+  profileRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+
+  profileText: {
+    flex: 1,
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginLeft: 10,
+  },
 });
