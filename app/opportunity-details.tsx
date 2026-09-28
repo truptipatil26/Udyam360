@@ -1,4 +1,6 @@
-import React from 'react';
+// app/opportunity-details.tsx
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
   ScrollView,
   StyleSheet,
@@ -7,8 +9,6 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 
 import { colors, radius, spacing } from '../constants/theme';
 

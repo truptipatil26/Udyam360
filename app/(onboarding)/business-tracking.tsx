@@ -1,15 +1,14 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Dimensions,
-  SafeAreaView,
-} from "react-native";
-import { useRouter } from "expo-router";
-import { completeOnboarding } from "../../src/services/auth";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import {
+  Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { completeOnboarding } from "../../src/services/auth";
 
 const { width, height } = Dimensions.get("window");
 const scaleFont = (size: number): number => (width / 375) * size;
