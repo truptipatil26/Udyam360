@@ -18,31 +18,28 @@ export default function OpportunityDetailsScreen() {
   const params = useLocalSearchParams<{
     category?: string;
     competitionLevel?: string;
-    within1km?: string;
-    within3km?: string;
-    within5km?: string;
-    nearestName?: string;
-    nearestDistance?: string;
+    densityCategory?: string;
+    pincode?: string;
+    categoryBusinesses?: string;
+    totalBusinesses?: string;
+    densityScore?: string;
     capital?: string;
     skills?: string;
     village?: string;
     district?: string;
-    lat?: string;
-    lon?: string;
   }>();
 
   const category = params.category || 'Business Opportunity';
   const competitionLevel = params.competitionLevel || 'Unknown';
 
-  const within1km = params.within1km || '0';
-  const within3km = params.within3km || '0';
-  const within5km = params.within5km || '0';
+  const densityCategory = params.densityCategory || category;
+  const pincode = params.pincode || 'Unknown';
+  const categoryBusinesses = params.categoryBusinesses || '0';
+  const totalBusinesses = params.totalBusinesses || '0';
+  const densityScore = params.densityScore || '0';
 
   const capital = params.capital || 'Not specified';
   const skills = params.skills || 'Not specified';
-
-  const nearestName = params.nearestName;
-  const nearestDistance = params.nearestDistance;
 
   const isLowCompetition =
     competitionLevel.toLowerCase().includes('low') ||
@@ -129,24 +126,28 @@ export default function OpportunityDetailsScreen() {
         </View>
 
         {/* Competition overview */}
-        <Text style={styles.sectionTitle}>Competition Overview</Text>
+        <Text style={styles.sectionTitle}>Registered Business Density</Text>
 
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{within1km}</Text>
-            <Text style={styles.statLabel}>Within 1 km</Text>
+            <Text style={styles.statNumber}>{categoryBusinesses}</Text>
+            <Text style={styles.statLabel}>Businesses in {densityCategory}</Text>
           </View>
 
           <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{within3km}</Text>
-            <Text style={styles.statLabel}>Within 3 km</Text>
+            <Text style={styles.statNumber}>{totalBusinesses}</Text>
+            <Text style={styles.statLabel}>Total businesses</Text>
           </View>
 
           <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{within5km}</Text>
-            <Text style={styles.statLabel}>Within 5 km</Text>
+            <Text style={styles.statNumber}>{densityScore}</Text>
+            <Text style={styles.statLabel}>Density score</Text>
           </View>
         </View>
+
+        <Text style={styles.locationText}>
+          PIN {pincode}
+        </Text>
 
         {/* Why this opportunity */}
         <Text style={styles.sectionTitle}>Why this opportunity?</Text>
@@ -159,36 +160,9 @@ export default function OpportunityDetailsScreen() {
           />
 
           <Text style={styles.infoText}>
-            {competitionLevel === 'No Competition'
-              ? `No competitors were detected for ${category} in the analysed area. This indicates a potential market gap, but demand should also be verified before starting the business.`
-              : `The analysis detected ${within1km} competitor(s) within 1 km, ${within3km} within 3 km and ${within5km} within 5 km. Udyam360 can use this information to understand the local competitive landscape.`}
+            {categoryBusinesses} registered businesses in {densityCategory} (the broader density category for {category}) were recorded for PIN {pincode}, out of {totalBusinesses} businesses overall. The density score is {densityScore}.
           </Text>
         </View>
-
-        {/* Nearest competitor */}
-        {nearestName && (
-          <>
-            <Text style={styles.sectionTitle}>Nearest Competitor</Text>
-
-            <View style={styles.infoCard}>
-              <Ionicons
-                name="location-outline"
-                size={25}
-                color={colors.primary}
-              />
-
-              <View style={styles.nearestContent}>
-                <Text style={styles.nearestName}>{nearestName}</Text>
-
-                {nearestDistance && (
-                  <Text style={styles.nearestDistance}>
-                    Approximately {Math.round(Number(nearestDistance))} m away
-                  </Text>
-                )}
-              </View>
-            </View>
-          </>
-        )}
 
         {/* User profile */}
         <Text style={styles.sectionTitle}>Your Profile</Text>
@@ -240,30 +214,6 @@ export default function OpportunityDetailsScreen() {
           </View>
         )}
 
-        {/* CTA */}
-        <TouchableOpacity
-          style={styles.primaryButton}
-          activeOpacity={0.8}
-          onPress={() => {
-            router.push({
-              pathname: '/opportunity-map',
-              params: {
-                category,
-                lat: String(params.lat || ''),
-                lon: String(params.lon || ''),
-              },
-            });
-          }}
-        >
-          <Text style={styles.primaryButtonText}>View Competitor Map</Text>
-
-          <Ionicons
-            name="arrow-forward"
-            size={20}
-            color="#FFFFFF"
-          />
-        </TouchableOpacity>
-
         <TouchableOpacity
           style={styles.secondaryButton}
           activeOpacity={0.8}
@@ -274,7 +224,6 @@ export default function OpportunityDetailsScreen() {
             size={20}
             color={colors.primary}
           />
-
           <Text style={styles.secondaryButtonText}>
             Check Eligibility for Loan
           </Text>
@@ -471,22 +420,6 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 
-  nearestContent: {
-    marginLeft: spacing.md,
-  },
-
-  nearestName: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.textPrimary,
-  },
-
-  nearestDistance: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 3,
-  },
-
   profileCard: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
@@ -528,23 +461,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.textSecondary,
     marginLeft: 6,
-  },
-
-  primaryButton: {
-    height: 54,
-    borderRadius: radius.lg,
-    backgroundColor: colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    marginTop: spacing.xl,
-  },
-
-  primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '800',
   },
 
   secondaryButton: {

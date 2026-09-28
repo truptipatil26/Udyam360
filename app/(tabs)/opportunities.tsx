@@ -44,6 +44,7 @@ export default function OpportunitiesScreen() {
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
   const [locationAddress, setLocationAddress] = useState('');
+  const [pincode, setPincode] = useState('');
 
   const [category, setCategory] = useState('grocery');
   const [customCategory, setCustomCategory] = useState('');
@@ -80,6 +81,14 @@ export default function OpportunitiesScreen() {
     );
 
     setLocationAddress(profile.locationAddress || '');
+    
+    // Try to extract pincode from locationAddress if available
+    if (profile.locationAddress) {
+      const pinMatch = profile.locationAddress.match(/\b\d{6}\b/);
+      if (pinMatch) {
+        setPincode(pinMatch[0]);
+      }
+    }
   }, []);
 
   useFocusEffect(
@@ -89,10 +98,10 @@ export default function OpportunitiesScreen() {
   );
 
   const analyzeOpportunity = async () => {
-    if (latitude === null || longitude === null) {
+    if (!pincode.trim()) {
       Alert.alert(
-        'Location Required',
-        'Please set your business location first from Profile → Update Location.'
+        'Pincode Required',
+        'Please enter a 6-digit Pincode to analyze density.'
       );
       return;
     }
@@ -113,10 +122,17 @@ export default function OpportunitiesScreen() {
       setAnalysis(null);
 
       const result = await getCompetitionAnalysis(
-        latitude,
-        longitude,
+        pincode.trim(),
         selectedCategory.toLowerCase()
       );
+
+      if (!result) {
+        Alert.alert(
+          'No Data Found',
+          `No registered business data could be found for PIN ${pincode} in this category.`
+        );
+        return;
+      }
 
       setAnalysis(result);
     } catch (error) {
@@ -142,34 +158,7 @@ export default function OpportunitiesScreen() {
   const getCompetitionDescription = () => {
     if (!analysis) return '';
 
-    switch (analysis.competition_level) {
-      case 'No Competition':
-        return 'No recorded competitors were found around your selected location. This may indicate a potential market gap.';
-
-      case 'Low Competition':
-        return 'Only a small number of competitors were found nearby. This category may have room for a new business.';
-
-      case 'Medium Competition':
-        return 'Some competitors are already operating nearby. Consider differentiation before starting this business.';
-
-      case 'High Competition':
-        return 'Several competitors are operating nearby. A strong differentiation strategy may be important.';
-
-      default:
-        return 'Competition data is available for this business category.';
-    }
-  };
-
-  const formatDistance = (distance: number | null) => {
-    if (distance === null) {
-      return '—';
-    }
-
-    if (distance < 1000) {
-      return `${Math.round(distance)} m`;
-    }
-
-    return `${(distance / 1000).toFixed(1)} km`;
+    return `${analysis.category_businesses.toLocaleString()} registered businesses in ${analysis.basic_category} were recorded for PIN ${analysis.pincode}. The density score is ${analysis.density_score.toFixed(2)}.`;
   };
 
   return (
@@ -237,6 +226,17 @@ export default function OpportunitiesScreen() {
             </Text>
           </View>
         </View>
+
+        {/* Pincode Input */}
+        <TextInput
+          style={styles.input}
+          placeholder="Enter 6-digit Pincode"
+          placeholderTextColor={colors.textSecondary}
+          value={pincode}
+          onChangeText={setPincode}
+          keyboardType="numeric"
+          maxLength={6}
+        />
 
         {/* Category */}
 
@@ -333,7 +333,7 @@ export default function OpportunitiesScreen() {
             />
 
             <Text style={styles.loadingText}>
-              Analyzing competitors around your location...
+              Loading registered-business density for your location...
             </Text>
           </View>
         )}
@@ -345,7 +345,7 @@ export default function OpportunitiesScreen() {
             <View style={styles.resultHeader}>
               <View>
                 <Text style={styles.resultEyebrow}>
-                  AI COMPETITION ANALYSIS
+                  REGISTERED BUSINESS DENSITY
                 </Text>
 
                 <Text style={styles.resultTitle}>
@@ -398,21 +398,17 @@ export default function OpportunitiesScreen() {
     router.push({
       pathname: '/opportunity-details',
       params: {
-        category: analysis.category,
+        category: analysis.basic_category,
         competitionLevel: analysis.competition_level,
-        within1km: String(analysis.competitors.within_1km),
-        within3km: String(analysis.competitors.within_3km),
-        within5km: String(analysis.competitors.within_5km),
-        nearestName: analysis.nearest_competitor.business_name || '',
-        nearestDistance: String(
-          analysis.nearest_competitor.distance_m || ''
-        ),
+        densityCategory: analysis.basic_category,
+        pincode: analysis.pincode,
+        categoryBusinesses: String(analysis.category_businesses),
+        totalBusinesses: String(analysis.total_businesses),
+        densityScore: String(analysis.density_score),
         capital,
         skills,
         village,
         district,
-        lat: String(latitude),
-        lon: String(longitude),
       },
     });
   }}
@@ -428,94 +424,43 @@ export default function OpportunitiesScreen() {
   />
 </TouchableOpacity>
 
-            {/* Competitor statistics */}
+            {/* Registered-business density statistics */}
 
             <Text style={styles.sectionTitle}>
-              Nearby Competition
+              Registered Business Density
             </Text>
 
             <View style={styles.statsGrid}>
               <View style={styles.statCard}>
-                <Ionicons
-                  name="location-outline"
-                  size={23}
-                  color={colors.primary}
-                />
-
+                <Ionicons name="storefront-outline" size={23} color={colors.primary} />
                 <Text style={styles.statNumber}>
-                  {analysis.competitors.within_1km}
+                  {analysis.category_businesses.toLocaleString()}
                 </Text>
-
                 <Text style={styles.statLabel}>
-                  Within 1 km
+                  Businesses in {analysis.basic_category}
                 </Text>
               </View>
 
               <View style={styles.statCard}>
-                <Ionicons
-                  name="location-outline"
-                  size={23}
-                  color={colors.primary}
-                />
-
+                <Ionicons name="business-outline" size={23} color={colors.primary} />
                 <Text style={styles.statNumber}>
-                  {analysis.competitors.within_3km}
+                  {analysis.total_businesses.toLocaleString()}
                 </Text>
-
-                <Text style={styles.statLabel}>
-                  Within 3 km
-                </Text>
+                <Text style={styles.statLabel}>Total businesses</Text>
               </View>
 
               <View style={styles.statCard}>
-                <Ionicons
-                  name="location-outline"
-                  size={23}
-                  color={colors.primary}
-                />
-
+                <Ionicons name="analytics-outline" size={23} color={colors.primary} />
                 <Text style={styles.statNumber}>
-                  {analysis.competitors.within_5km}
+                  {analysis.density_score.toFixed(2)}
                 </Text>
-
-                <Text style={styles.statLabel}>
-                  Within 5 km
-                </Text>
+                <Text style={styles.statLabel}>Density score</Text>
               </View>
             </View>
 
-            {/* Nearest competitor */}
-
-            <View style={styles.nearestCard}>
-              <View style={styles.nearestIcon}>
-                <Ionicons
-                  name="storefront-outline"
-                  size={24}
-                  color={colors.primary}
-                />
-              </View>
-
-              <View style={styles.nearestInfo}>
-                <Text style={styles.smallLabel}>
-                  NEAREST COMPETITOR
-                </Text>
-
-                <Text style={styles.nearestName}>
-                  {analysis.nearest_competitor.business_name ||
-                    'No recorded competitor'}
-                </Text>
-
-                {analysis.nearest_competitor.distance_m !==
-                  null && (
-                  <Text style={styles.nearestDistance}>
-                    {formatDistance(
-                      analysis.nearest_competitor.distance_m
-                    )}{' '}
-                    away
-                  </Text>
-                )}
-              </View>
-            </View>
+            <Text style={styles.loadingText}>
+              PIN {analysis.pincode}
+            </Text>
           </>
         )}
 
@@ -893,33 +838,6 @@ exploreButtonText: {
     borderRadius: radius.lg,
     padding: spacing.md,
     marginBottom: spacing.xl,
-  },
-
-  nearestIcon: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    backgroundColor: colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.md,
-  },
-
-  nearestInfo: {
-    flex: 1,
-  },
-
-  nearestName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    marginTop: 4,
-  },
-
-  nearestDistance: {
-    fontSize: 13,
-    color: colors.textSecondary,
-    marginTop: 3,
   },
 
   emptyCard: {
