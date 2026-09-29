@@ -349,8 +349,8 @@ export default function OpportunitiesScreen() {
                 </Text>
 
                 <Text style={styles.resultTitle}>
-                  {analysis.category.charAt(0).toUpperCase() +
-                    analysis.category.slice(1)}
+                  {analysis.basic_category.charAt(0).toUpperCase() +
+                    analysis.basic_category.slice(1)}
                 </Text>
               </View>
 
