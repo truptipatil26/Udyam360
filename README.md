@@ -19,7 +19,7 @@ Udyam360 analyzes local demand, resources, market conditions, and financial requ
 
 > **Project status:** Idea/prototype stage for Smart India Hackathon 2026. Technology choices below reflect the proposed design in the idea submission. `[Update implementation status after code is finalized]`
 
-- **Live Demo:** `[Add Live Demo Link]`
+- **Live Demo:** https://youtu.be/rK4W__CKIgs?feature=shared
 
 ---
 
