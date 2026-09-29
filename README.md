@@ -1,4 +1,4 @@
-<div align="center">
+<img width="194" height="70" alt="image" src="https://github.com/user-attachments/assets/d9f5c032-3515-4cc6-a434-241c7cbd3259" /><div align="center">
 
 # Udyam360
 
@@ -19,14 +19,13 @@ Udyam360 analyzes local demand, resources, market conditions, and financial requ
 
 > **Project status:** Idea/prototype stage for Smart India Hackathon 2026. Technology choices below reflect the proposed design in the idea submission. `[Update implementation status after code is finalized]`
 
-- **Repository:** `[Add GitHub Repository Link]`
 - **Live Demo:** `[Add Live Demo Link]`
 
 ---
 
 ## 📑 Table of Contents
 
-- [Problem Statement](#-problem-statement)
+- [Problem Statement](#-SIH26091)
 - [Why Udyam360?](#-why-udyam360)
 - [Solution Overview](#-solution-overview)
 - [Key Features](#-key-features)
@@ -165,16 +164,16 @@ The proposal's strategic roadmap groups these steps as: **Local Data → Feasibi
 
 | Category | Technologies |
 |---|---|
-| **Mobile App** | Flutter (framework), Dart (language) |
-| **Web App** | React |
+| **Mobile App** | Expo (framework) |
+| **Web App** | React Native |
 | **UI Styling** | Tailwind CSS |
 | **Backend** | Python, FastAPI (REST APIs) |
-| **Database** | MongoDB (NoSQL), PostgreSQL (relational) `[Confirm which is used]` |
+| **Database** | Supabase, PostgreSQL (relational) `[Confirm which is used]` |
 | **AI / ML** | Gemini API (LLM), Pinecone (vector database) |
-| **Cloud & Hosting** | Render (backend), Vercel (frontend) |
+| **Cloud & Hosting** | Render (backend), EAS Build |
 | **Tools** | GitHub, VS Code, Postman |
 
-Other technologies mentioned in the proposal's research section: Sarvam AI, Supabase, OpenStreetMap. `[Confirm whether these are used]`
+Other technologies mentioned in the proposal's research section: Sarvam AI, OpenStreetMap. `[Confirm whether these are used]`
 
 ---
 
