@@ -44,12 +44,9 @@ Udyam360 analyzes local demand, resources, market conditions, and financial requ
 - [Impact](#-impact)
 - [Future Enhancements](#-future-enhancements)
 - [Limitations](#%EF%B8%8F-limitations)
-- [Team](#-team)
 - [Hackathon Information](#-hackathon-information)
 - [References](#-references)
-- [License](#-license)
 
----
 
 ## 🎯 Problem Statement
 
@@ -246,16 +243,20 @@ EMI formula used: `EMI = P × r × (1+r)^n / ((1+r)^n − 1)`
 The proposal includes UI concept screens: onboarding ("Discover Local Opportunities"), "Understand Your Business", "AI Business Advisor", a home dashboard, and "Local Market Insights".
 
 ### Onboarding
-`[Add Screenshot]`
+<img width="228" height="485" alt="image" src="https://github.com/user-attachments/assets/f1b30ce9-fece-4f6c-afba-7f45b2ec5b62" />
+
 
 ### Dashboard
-`[Add Screenshot]`
+<img width="153" height="356" alt="image" src="https://github.com/user-attachments/assets/935c5698-1271-4cfc-941c-2dfe64874587" />
+
 
 ### Local Market Insights
-`[Add Screenshot]`
+<img width="150" height="356" alt="image" src="https://github.com/user-attachments/assets/4d63c11d-8e62-4276-be31-4d9832d8d38f" />
+
 
 ### Business Analysis / Financial Plan
-`[Add Screenshot]`
+<img width="165" height="352" alt="image" src="https://github.com/user-attachments/assets/9e52eb0a-d20c-4aca-b663-1b8e6f46b232" />
+
 
 ---
 
@@ -263,31 +264,11 @@ The proposal includes UI concept screens: onboarding ("Discover Local Opportunit
 
 Installation instructions will be added after the project structure and dependencies are finalized.
 
-```bash
-# [Add Installation Command]
-```
-
----
-
 ## 🔐 Environment Variables
 
 The required variables will be documented once the codebase is finalized. The proposal uses the Gemini API, so a Gemini API key is expected. `[Confirm variable names]`
 
-```env
-# Example placeholder – replace with actual variable names from your code
-# GEMINI_API_KEY=your_api_key
-```
-
 > Never commit real API keys or secrets to the repository.
-
----
-
-## ▶️ Running the Project
-
-```bash
-# [Add command to run backend]
-# [Add command to run mobile/web frontend]
-```
 
 ---
 
@@ -303,23 +284,6 @@ If FastAPI is used, interactive docs are typically served at `/docs`. `[Confirm]
 
 ---
 
-## 🎬 Example Usage
-
-`[Add a walkthrough: e.g., user enters location and business interest → receives feasibility score, resource plan, financial estimate, and matching schemes]`
-
----
-
-## 📂 Project Structure
-
-`[Add project tree after the repository is organized]`
-
-```text
-project-root/
-└── README.md
-```
-
----
-
 ## 🌍 Impact
 
 | Area | Expected benefit |
@@ -328,29 +292,12 @@ project-root/
 | **Language & Accessibility** | Multilingual voice assistant guiding rural users step by step |
 | **Digital Marketing** | Helps local enterprises expand their market regionally |
 
----
-
-## 🚀 Future Enhancements
-
-`[Add planned features. The proposal mentions ongoing support via chatbot/voice assistant and continuous learning & improvement, so mark these as planned if not yet built.]`
-
----
 
 ## ⚠️ Limitations
 
 - Recommendations depend on the quality and coverage of available local data (e.g., OpenStreetMap).
 - Scheme rules and interest rates change with policy; the rules database must be kept up to date.
 - Financial figures are estimates intended to support planning, not guarantees of loan approval.
-
----
-
-## 👥 Team
-
-**Team BRUTEFORCE**
-
-| Name | Role | Links |
-|---|---|---|
-| `[Add Name]` | `[Add Role]` | `[Add GitHub/LinkedIn]` |
 
 ---
 
@@ -364,25 +311,21 @@ project-root/
 | **Theme** | Agriculture, FoodTech & Rural Development |
 | **Category** | Software |
 | **Team Name** | BRUTEFORCE |
-| **Team ID** | `[Add Team ID]` |
+| **Team ID** | 167203 |
 
 ---
 
 ## 📚 References
 
 **Research papers**
-1. AI-Driven Finance & Rural Inclusion (2026) – `[Add Link]`
-2. Financial Inclusion in Rural India (2026) – `[Add Link]`
-3. Financial Inclusion & Rural Entrepreneurship (2026) – `[Add Link]`
-4. AI Financial Literacy for Rural Women (2025) – `[Add Link]`
+1. AI-Driven Finance & Rural Inclusion (2026)
+2. Financial Inclusion in Rural India (2026)
+3. Financial Inclusion & Rural Entrepreneurship (2026)
+4. AI Financial Literacy for Rural Women (2025)
 
 **Blogs / articles**
 
-5. Vyapar Mitra – AI Business Assistant – `[Add Link]`
-6. AI-Led Banking for Rural India (2026) – `[Add Link]`
+5. Vyapar Mitra – AI Business Assistant
+6. AI-Led Banking for Rural India (2026)
 
----
 
-## 📄 License
-
-`[Add License, e.g., MIT / Apache-2.0 / All Rights Reserved]`
