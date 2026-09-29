@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://10.64.204.216:8000";
+const API_BASE_URL = "https://udyamcalculator.onrender.com";
 
 export type LoanRequest = {
   loan_amount: number;
